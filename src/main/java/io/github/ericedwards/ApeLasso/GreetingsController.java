@@ -1,6 +1,7 @@
 package io.github.ericedwards.ApeLasso;
 
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,6 +14,7 @@ public class GreetingsController {
         return ResponseEntity.ok("Greetings from a public endpoint!");
     }
 
+    @SecurityRequirement(name = "API Key Authentication")
     @GetMapping("/protected/greetings")
     public ResponseEntity<String> getProtectedGreetings() {
         return ResponseEntity.ok("Greetings from a protected endpoint!");
