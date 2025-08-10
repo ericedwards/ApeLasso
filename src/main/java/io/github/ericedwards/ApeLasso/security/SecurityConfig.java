@@ -15,9 +15,11 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 public class SecurityConfig {
 
     private final ApiKeyAuthFilter authFilter;
+    private final UnauthorizedHandler unauthorizedHandler;
 
-    public SecurityConfig(ApiKeyAuthFilter authFilter) {
+    public SecurityConfig(ApiKeyAuthFilter authFilter, UnauthorizedHandler unauthorizedHandler) {
         this.authFilter = authFilter;
+        this.unauthorizedHandler = unauthorizedHandler;
     }
 
     @Bean
@@ -27,6 +29,7 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .formLogin(AbstractHttpConfigurer::disable)
+                .exceptionHandling(configurer -> configurer.authenticationEntryPoint(unauthorizedHandler))
                 .securityMatcher("/**")
                 .authorizeHttpRequests(registry -> registry
                         .requestMatchers(AntPathRequestMatcher.antMatcher("/public/**") ).permitAll()
