@@ -9,6 +9,7 @@ public class ApiKey {
 
     @Id
     String name;
+    @Lob
     String salt;
     @Lob
     String secret;
