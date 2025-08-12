@@ -11,12 +11,15 @@ import java.util.Optional;
 @Component
 public class ApiKeyAuthExtractor {
 
-    @Value("${application.security.initialApiKey}")
-    private String apiKey;
+    private final ApiKeyService apiKeyService;
+
+    public ApiKeyAuthExtractor(ApiKeyService apiKeyService) {
+        this.apiKeyService = apiKeyService;
+    }
 
     public Optional<Authentication> extract(HttpServletRequest request) {
         String providedKey = request.getHeader("X-API-KEY");
-        if (providedKey == null || !providedKey.equals(apiKey))
+        if (providedKey == null || !apiKeyService.verify(providedKey))
             return Optional.empty();
         return Optional.of(new ApiKeyAuth(providedKey, AuthorityUtils.NO_AUTHORITIES));
     }
