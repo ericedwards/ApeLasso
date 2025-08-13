@@ -37,7 +37,7 @@ public class GreetingsControllerTests {
 
     @Test
     void shouldReturnError_IfWrongApiKeyIsProvided_WhenAccessingProtectedGreetings() throws Exception {
-        this.mockMvc.perform(get("/protected/greetings").header("ApiKey", "mywrongkey"))
+        this.mockMvc.perform(get("/protected/greetings").header("X-API-KEY", "mywrongkey"))
                 .andExpect(status().isUnauthorized());
     }
 
