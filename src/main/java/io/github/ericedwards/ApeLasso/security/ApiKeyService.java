@@ -6,9 +6,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Optional;
 
 @Component
@@ -37,6 +39,7 @@ public class ApiKeyService {
             String encodedSecret = SaltedPassword.encodeHashedPassword(encodedSalt, adminSecret);
             initialApiKey.setSalt(encodedSalt);
             initialApiKey.setSecret(encodedSecret);
+            initialApiKey.setRole(ApiKey.ROLE_API_KEY_ADMIN);
             apiKeyRepository.save(initialApiKey);
             logger.info("created initial api key: {}", configApiKey);
         } else {
@@ -51,7 +54,18 @@ public class ApiKeyService {
         ApiKey targetApiKey = apiKeyRepository.findByName(targetName);
         if ((targetName != null) && (targetSecret != null)
                 && SaltedPassword.check(targetApiKey.getSalt(), targetApiKey.getSecret(), targetSecret)) {
-            return Optional.of(new ApiKeyAuth(providedApiKey, AuthorityUtils.NO_AUTHORITIES));
+            Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
+            switch(targetApiKey.getRole()) {
+                case ApiKey.ROLE_API_KEY_ADMIN:
+                    authorities.add(new SimpleGrantedAuthority(ApiKey.ROLE_API_KEY_ADMIN));
+                    // fall into ...
+                case ApiKey.ROLE_API_KEY_USER:
+                    authorities.add(new SimpleGrantedAuthority(ApiKey.ROLE_API_KEY_USER));
+                    break;
+                default:
+                    break;
+            }
+            return Optional.of(new ApiKeyAuth(providedApiKey, authorities));
         } else {
             return Optional.empty();
         }
@@ -63,6 +77,7 @@ public class ApiKeyService {
         if (targetApiKey == null) {
             targetApiKey = new ApiKey();
             targetApiKey.setName(targetName);
+            targetApiKey.setRole(ApiKey.ROLE_API_KEY_USER);
         }
         String newSecret = SaltedPassword.generateBase64Password();
         String encodedSalt = SaltedPassword.generateSaltEncoded();

@@ -7,6 +7,9 @@ import jakarta.persistence.Lob;
 @Entity
 public class ApiKey {
 
+    public static final String ROLE_API_KEY_USER = "ROLE_API_KEY_USER";
+    public static final String ROLE_API_KEY_ADMIN = "ROLE_API_KEY_ADMIN";
+
     @Id
     String name;
     @Lob
