@@ -5,7 +5,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.stereotype.Component;
+
+import java.util.Optional;
 
 @Component
 public class ApiKeyService {
@@ -40,14 +44,16 @@ public class ApiKeyService {
         }
     }
 
-    public boolean verify(String apiKey) {
-        String targetName = getName(apiKey);
-        String targetSecret = getSecret(apiKey);
+    public Optional<Authentication> verify(String providedApiKey) {
+        if (providedApiKey == null) return Optional.empty();
+        String targetName = getName(providedApiKey);
+        String targetSecret = getSecret(providedApiKey);
         ApiKey targetApiKey = apiKeyRepository.findByName(targetName);
-        if (targetApiKey != null) {
-            return SaltedPassword.check(targetApiKey.getSalt(), targetApiKey.getSecret(), targetSecret);
+        if ((targetName != null) && (targetSecret != null)
+                && SaltedPassword.check(targetApiKey.getSalt(), targetApiKey.getSecret(), targetSecret)) {
+            return Optional.of(new ApiKeyAuth(providedApiKey, AuthorityUtils.NO_AUTHORITIES));
         } else {
-            return false;
+            return Optional.empty();
         }
     }
 

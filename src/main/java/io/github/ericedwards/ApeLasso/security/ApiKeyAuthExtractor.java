@@ -19,9 +19,7 @@ public class ApiKeyAuthExtractor {
 
     public Optional<Authentication> extract(HttpServletRequest request) {
         String providedKey = request.getHeader("X-API-KEY");
-        if (providedKey == null || !apiKeyService.verify(providedKey))
-            return Optional.empty();
-        return Optional.of(new ApiKeyAuth(providedKey, AuthorityUtils.NO_AUTHORITIES));
+        return apiKeyService.verify(providedKey);
     }
 
 }
