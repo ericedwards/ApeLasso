@@ -36,4 +36,18 @@ public class ApiKeyControllerTests {
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Greetings")));
     }
+
+    @Test
+    void createApiKeyAndTryAdmin() throws Exception {
+        MvcResult result = this.mockMvc.perform(post("/protected/apiKey")
+                        .header("X-API-KEY", apiKey)
+                        .param("apiKeyName", "anewkey2"))
+                .andExpect(status().isOk())
+                .andReturn();
+        String newApiKey = result.getResponse().getContentAsString();
+        this.mockMvc.perform(post("/protected/apiKey")
+                .header("X-API-KEY", newApiKey)
+                .param("apiKeyName", "anewkey3"))
+                .andExpect(status().isForbidden());
+    }
 }
